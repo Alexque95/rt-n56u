@@ -12,7 +12,7 @@ on:
 jobs:
   build:
     name: build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       targets: NEWIFI3
       images_dir: /opt/images
@@ -21,17 +21,17 @@ jobs:
 
       - name: Prepare environment
         run: |
-          # 彻底禁用 apt-mirrors 机制，重写为纯官方源，绕开 azure.archive.ubuntu.com 的 DNS 故障
-          sudo rm -f /etc/apt/apt-mirrors.txt
-          sudo sh -c 'cat > /etc/apt/sources.list <<EOF
-          deb http://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse
-          deb http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse
-          deb http://security.ubuntu.com/ubuntu jammy-security main restricted universe multiverse
-          deb http://archive.ubuntu.com/ubuntu jammy-backports main restricted universe multiverse
-          EOF'
-          sudo rm -f /etc/apt/sources.list.d/*.sources 2>/dev/null || true
-          sudo apt-get update -y || sudo apt-get update -y
-          sudo apt-get install -y libtool-bin gperf python3-docutils autopoint gettext
+          # 优先探测已安装，避免 DNS 不稳定时 apt 失败
+          for pkg in gperf autopoint gettext python3-docutils libtool-bin; do
+            if ! command -v $pkg >/dev/null 2>&1 && ! dpkg -s $pkg >/dev/null 2>&1; then
+              NEED="$NEED $pkg"
+            fi
+          done
+          echo "需要安装: $NEED"
+          if [ -n "$NEED" ]; then
+            sudo apt-get update -y || true
+            sudo apt-get install -y $NEED
+          fi
 
       - name: Prepare toolchain
         run: |
