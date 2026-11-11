@@ -296,6 +296,7 @@ if [ "$(nvram get rt_ssid)" != "Nexus-Penetra" ]; then
   nvram set wl_HT_BW=2
   nvram set rt_country_code=CN
   nvram set wl_country_code=CN
+  nvram set computer_name=Nexus
   nvram set wan_dnsenable_x=0
   nvram set wan_dns1_x=183.221.253.100
   nvram set wan_dns2_x=211.137.96.205
