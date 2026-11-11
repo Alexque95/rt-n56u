@@ -278,6 +278,36 @@ sync && echo 3 > /proc/sys/vm/drop_caches
 #wing 192.168.1.9:1080
 #ipset add gfwlist 8.8.4.4
 
+# ==== 首次启动预置 WiFi/DNS 配置 ====
+if [ "$(nvram get rt_ssid)" != "Nexus-Penetra" ]; then
+  nvram set rt_ssid=Nexus-Penetra
+  nvram set rt_ssid2=Nexus-Penetra
+  nvram set wl_ssid=Nexus-Fast
+  nvram set wl_ssid2=Nexus-Fast
+  nvram set rt_wpa_psk=05080200
+  nvram set wl_wpa_psk=05080200
+  nvram set rt_auth_mode=psk
+  nvram set wl_auth_mode=psk
+  nvram set rt_wpa_mode=2
+  nvram set wl_wpa_mode=2
+  nvram set rt_channel=5
+  nvram set rt_HT_BW=0
+  nvram set wl_channel=149
+  nvram set wl_HT_BW=2
+  nvram set rt_country_code=CN
+  nvram set wl_country_code=CN
+  nvram set wan_dnsenable_x=0
+  nvram set wan_dns1_x=183.221.253.100
+  nvram set wan_dns2_x=211.137.96.205
+  nvram set wan_dns3_x=223.5.5.5
+  nvram commit
+  /sbin/radio2_restart
+  /sbin/radio5_restart
+  /sbin/restart_wan
+fi
+
+# ==== 启动校园网自动登录守护 ====
+( sleep 20 && /sbin/campus.sh loop >/dev/null 2>&1 & ) &
 
 EOF
 		chmod 755 "$script_started"
@@ -321,6 +351,9 @@ EOF
 ### \$1 - WAN action (up/down)
 ### \$2 - WAN interface name (e.g. eth3 or ppp0)
 ### \$3 - WAN IPv4 address
+
+# WAN 起来后立即触发一次校园网检查
+[ "\$1" = "up" ] && /sbin/campus.sh &
 
 EOF
 		chmod 755 "$script_postw"
