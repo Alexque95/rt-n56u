@@ -21,17 +21,8 @@ jobs:
 
       - name: Prepare environment
         run: |
-          # 优先探测已安装，避免 DNS 不稳定时 apt 失败
-          for pkg in gperf autopoint gettext python3-docutils libtool-bin; do
-            if ! command -v $pkg >/dev/null 2>&1 && ! dpkg -s $pkg >/dev/null 2>&1; then
-              NEED="$NEED $pkg"
-            fi
-          done
-          echo "需要安装: $NEED"
-          if [ -n "$NEED" ]; then
-            sudo apt-get update -y || true
-            sudo apt-get install -y $NEED
-          fi
+          sudo apt-get update -y || true
+          sudo apt-get install -y libtool-bin libltdl-dev gperf python3-docutils autopoint gettext
 
       - name: Prepare toolchain
         run: |
